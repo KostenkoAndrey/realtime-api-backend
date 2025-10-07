@@ -1,6 +1,10 @@
 import { Router } from 'express';
-import studentsRouter from './сonversation.js';
+import conversationsRouter from './сonversation.js';
+import authRouter from './auth.js';
 
 const router = Router();
-router.use('/conversations', studentsRouter);
+
+router.use('/conversations', conversationsRouter);
+router.use('/auth', authRouter);
+
 export default router;

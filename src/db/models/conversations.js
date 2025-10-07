@@ -9,6 +9,10 @@ const conversationsSchema = new Schema(
         createdAt: { type: Date, default: Date.now },
       },
     ],
+    parentId: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+    },
   },
   {
     timestamps: true,
@@ -16,7 +20,4 @@ const conversationsSchema = new Schema(
   },
 );
 
-export const ConversationsCollection = model(
-  'conversations',
-  conversationsSchema,
-);
+export const ConversationsCollection = model('conversations', conversationsSchema);
