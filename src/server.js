@@ -14,16 +14,18 @@ const PORT = Number(getEnvVar('PORT', '3000'));
 export const startServer = () => {
   const app = express();
   app.use(express.json({ type: ['application/json', 'application/vnd.api+json'] }));
-  app.use(cors());
+  app.use(
+  cors({
+    origin: [ 'http://localhost:3000',
+    ],
+    credentials: true,
+    allowedHeaders: ['Content-Type'],
+  })
+);
   app.use(cookieParser());
   app.use(pino({ transport: { target: 'pino-pretty' } }));
 
   app.use(router);
-
-  app.get('/', (req, res) => {
-    res.json({ message: 'Hello world!' });
-  });
-
   app.use(notFoundHandler);
   app.use(errorHandler);
 
