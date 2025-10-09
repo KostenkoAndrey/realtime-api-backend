@@ -14,11 +14,12 @@ export const generateAuthUrl = () =>
   });
 
 export const validateCode = async (code) => {
-  const response = await googleOAuthClient.getToken(code);
-  if (!response.tokens.id_token) throw createHttpError(401, 'Unauthorized');
+  const { tokens } = await googleOAuthClient.getToken(code);
+  if (!tokens.id_token) throw createHttpError(401, 'Unauthorized');
 
   const ticket = await googleOAuthClient.verifyIdToken({
-    idToken: response.tokens.id_token,
+      idToken: tokens.id_token,
+      audience: getEnvVar('GOOGLE_AUTH_CLIENT_ID'),
   });
   return ticket;
 };
