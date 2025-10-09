@@ -13,13 +13,15 @@ const PORT = Number(getEnvVar('PORT', '3000'));
 
 export const startServer = () => {
   const app = express();
+  app.use(express.json());
+
   app.use(cors({
   origin: ['http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  exposedHeaders: ['Authorization']
 }));
-  app.use(express.json({ type: ['application/json', 'application/vnd.api+json'] }));
+
   app.use(cookieParser());
   app.use(pino({ transport: { target: 'pino-pretty' } }));
 
