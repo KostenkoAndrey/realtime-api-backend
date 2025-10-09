@@ -181,10 +181,17 @@ export const loginOrSignupWithGoogle = async (code) => {
     });
   }
 
-  const newSession = createSession();
-
-  return await SessionsCollection.create({
+    const newSession = createSession();
+    const session = await SessionsCollection.create({
     userId: user._id,
     ...newSession,
   });
+return {
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    },
+    session,
+  };
 };
