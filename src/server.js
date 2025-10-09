@@ -15,12 +15,11 @@ export const startServer = () => {
   const app = express();
   app.use(express.json({ type: ['application/json', 'application/vnd.api+json'] }));
   app.use(cors({
-  origin: ['http://localhost:3000'], // твой фронтенд
+  origin: ['http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
-  app.options('*', cors());
   app.use(cookieParser());
   app.use(pino({ transport: { target: 'pino-pretty' } }));
 
