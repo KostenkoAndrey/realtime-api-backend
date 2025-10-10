@@ -10,6 +10,9 @@ const googleOAuthClient = new OAuth2Client({
 
 
 export const generateAuthUrl = () => {
+  const redirectUri = getEnvVar('GOOGLE_AUTH_REDIRECT_URI');
+  console.log('🌐 redirectUri used in request:', redirectUri);
+
     const url = googleOAuthClient.generateAuthUrl({
     redirect_uri: getEnvVar('GOOGLE_AUTH_REDIRECT_URI'),
     access_type: 'offline',
@@ -19,6 +22,8 @@ export const generateAuthUrl = () => {
       'https://www.googleapis.com/auth/userinfo.profile',
     ],
   });
+
+  console.log('✅ Generated Google Auth URL:', url);
 
   return url;
 };
