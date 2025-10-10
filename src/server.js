@@ -17,7 +17,7 @@ export const startServer = () => {
 
 app.use(
   cors({
-    origin: ['http://localhost:3000','https://realtime-api-frontend-11jr.vercel.app'],
+    origin: ['http://localhost:3000', 'http://localhost:3001','https://realtime-api-frontend-11jr.vercel.app'],
     credentials: true,
   })
 );
