@@ -8,10 +8,20 @@ const googleOAuthClient = new OAuth2Client({
   redirectUri:  getEnvVar('GOOGLE_AUTH_REDIRECT_URI'),
 });
 
-export const generateAuthUrl = () =>
-  googleOAuthClient.generateAuthUrl({
-    scope: ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'],
+
+export const generateAuthUrl = () => {
+    const url = googleOAuthClient.generateAuthUrl({
+    redirect_uri: getEnvVar('GOOGLE_AUTH_REDIRECT_URI'),
+    access_type: 'offline',
+    prompt: 'consent',
+    scope: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+    ],
   });
+
+  return url;
+};
 
 export const validateCode = async (code) => {
   const { tokens } = await googleOAuthClient.getToken(code);

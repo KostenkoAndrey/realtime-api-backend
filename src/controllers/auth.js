@@ -9,6 +9,7 @@ import {
   resetPassword,
   loginOrSignupWithGoogle,
 } from '../services/auth.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
 
 export const registerUserController = async (req, res) => {
   const user = await registerUser(req.body);
@@ -100,6 +101,7 @@ export const resetPasswordController = async (req, res) => {
 
 export const getGoogleOAuthUrlController = async (req, res) => {
   const url = generateAuthUrl();
+  console.log('Generated Google Auth URL:', url);
   res.json({
     status: 200,
     message: 'Successfully get Google OAuth url!',
