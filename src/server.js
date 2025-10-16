@@ -20,7 +20,7 @@ export const startServer = () => {
 
   app.use(
     cors({
-      origin: getEnvVar('FRONTEND_URL'),
+      origin: getEnvVar('APP_DOMAIN'),
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
@@ -43,7 +43,7 @@ export const startServer = () => {
 
   server.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
-    console.log(`🌐 CORS enabled for: ${getEnvVar('FRONTEND_URL')}`);
+    console.log(`🌐 CORS enabled for: ${getEnvVar('APP_DOMAIN')}`);
     console.log(`🌐 WebSocket available at ws://localhost:${PORT}/audio`);
     startStockUpdateCron();
   });
