@@ -220,21 +220,34 @@ export const loginOrSignupWithGoogle = async (code) => {
     });
   }
 
-  let session = await SessionsCollection.findOne({ userId: user._id });
-  if (!session) {
-    const newSession = createSession();
-    session = await SessionsCollection.create({
+  const newSession = createSession();
+
+  try {
+    const session = await SessionsCollection.create({
       userId: user._id,
       ...newSession,
     });
-  }
 
-  return {
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-    },
-    session,
-  };
+    return {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+      session,
+    };
+  } catch (err) {
+    if (err.code === 11000) {
+      const existing = await SessionsCollection.findOne({ userId: user._id });
+      return {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+        },
+        session: existing,
+      };
+    }
+    throw err;
+  }
 };
