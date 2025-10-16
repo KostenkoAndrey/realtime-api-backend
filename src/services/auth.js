@@ -13,7 +13,6 @@ import { FIFTEEN_MINUTES, ONE_DAY, SMTP } from '../constants/index.js';
 import { UsersCollection } from '../db/models/user.js';
 import { SessionsCollection } from '../db/models/session.js';
 import { getFullNameFromGoogleTokenPayload, validateCode } from '../utils/googleOAuth2.js';
-import { resendEmail } from '../utils/Resend.js';
 
 export const registerUser = async (payload) => {
   const user = await UsersCollection.findOne({ email: payload.email });
