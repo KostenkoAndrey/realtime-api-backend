@@ -13,7 +13,7 @@ import { FIFTEEN_MINUTES, ONE_DAY, SMTP } from '../constants/index.js';
 import { UsersCollection } from '../db/models/user.js';
 import { SessionsCollection } from '../db/models/session.js';
 import { getFullNameFromGoogleTokenPayload, validateCode } from '../utils/googleOAuth2.js';
-import { log } from 'node:console';
+import { resendEmail } from '../utils/Resend.js';
 
 export const registerUser = async (payload) => {
   const user = await UsersCollection.findOne({ email: payload.email });
@@ -60,6 +60,7 @@ export const loginUser = async (payload) => {
       email: user.email,
     },
     session: {
+      _id: session._id,
       accessToken,
       refreshToken,
       accessTokenValidUntil: session.accessTokenValidUntil,
@@ -126,21 +127,29 @@ export const requestResetToken = async (email) => {
   );
 
   const resetPasswordTemplatePath = path.join(TEMPLATES_DIR, 'reset-password-email.html');
-
   const templateSource = (await fs.readFile(resetPasswordTemplatePath)).toString();
-
   const template = handlebars.compile(templateSource);
+
   const html = template({
     name: user.name,
     link: `${getEnvVar('APP_DOMAIN')}/reset-password?token=${resetToken}`,
   });
 
-    await sendEmail({
+  await sendEmail({
     from: getEnvVar(SMTP.SMTP_FROM),
     to: email,
     subject: 'Reset your password',
     html,
   });
+  // console.log("before");
+
+  //   await resendEmail({
+  //     from: getEnvVar('SMTP_FROM'),
+  //     to: email,
+  //     subject: 'Reset your password',
+  //     html,
+  //   });
+  //   console.log("After");
 };
 
 export const resetPassword = async (payload) => {
@@ -174,7 +183,7 @@ export const loginOrSignupWithGoogle = async (code) => {
 
   let user = await UsersCollection.findOne({ email: payload.email });
   if (!user) {
-    const password = await bcrypt.hash(randomBytes(10).toString('hex'), 10);
+    const password = await bcrypt.hash(randomBytes(10), 10);
     user = await UsersCollection.create({
       email: payload.email,
       name: getFullNameFromGoogleTokenPayload(payload),
@@ -182,12 +191,12 @@ export const loginOrSignupWithGoogle = async (code) => {
     });
   }
 
-    const newSession = createSession();
-    const session = await SessionsCollection.create({
+  const newSession = createSession();
+  const session = await SessionsCollection.create({
     userId: user._id,
     ...newSession,
   });
-return {
+  return {
     user: {
       id: user._id,
       name: user.name,

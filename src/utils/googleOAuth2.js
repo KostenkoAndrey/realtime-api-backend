@@ -5,15 +5,14 @@ import createHttpError from 'http-errors';
 const googleOAuthClient = new OAuth2Client({
   clientId: getEnvVar('GOOGLE_AUTH_CLIENT_ID'),
   clientSecret: getEnvVar('GOOGLE_AUTH_CLIENT_SECRET'),
-  redirectUri:  getEnvVar('GOOGLE_AUTH_REDIRECT_URI'),
+  redirectUri: getEnvVar('GOOGLE_AUTH_REDIRECT_URI'),
 });
-
 
 export const generateAuthUrl = () => {
   const redirectUri = getEnvVar('GOOGLE_AUTH_REDIRECT_URI');
   console.log('🌐 redirectUri used in request:', redirectUri);
 
-    const url = googleOAuthClient.generateAuthUrl({
+  const url = googleOAuthClient.generateAuthUrl({
     redirect_uri: getEnvVar('GOOGLE_AUTH_REDIRECT_URI'),
     access_type: 'offline',
     prompt: 'consent',
@@ -33,8 +32,8 @@ export const validateCode = async (code) => {
   if (!tokens.id_token) throw createHttpError(401, 'Unauthorized');
 
   const ticket = await googleOAuthClient.verifyIdToken({
-      idToken: tokens.id_token,
-      audience: getEnvVar('GOOGLE_AUTH_CLIENT_ID'),
+    idToken: tokens.id_token,
+    audience: getEnvVar('GOOGLE_AUTH_CLIENT_ID'),
   });
   return ticket;
 };

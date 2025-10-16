@@ -12,3 +12,4 @@ export const SMTP = {
   SMTP_PASSWORD: 'SMTP_PASSWORD',
   SMTP_FROM: 'SMTP_FROM',
 };
+export const countries = ['de', 'nl', 'jp', 'gb', 'ca', 'fr', 'in', 'br', 'au', 'ch'];

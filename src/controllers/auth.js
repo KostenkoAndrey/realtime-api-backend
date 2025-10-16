@@ -9,7 +9,6 @@ import {
   resetPassword,
   loginOrSignupWithGoogle,
 } from '../services/auth.js';
-import { getEnvVar } from '../utils/getEnvVar.js';
 
 export const registerUserController = async (req, res) => {
   const user = await registerUser(req.body);
@@ -22,14 +21,20 @@ export const registerUserController = async (req, res) => {
 };
 
 export const loginUserController = async (req, res) => {
-  const session = await loginUser(req.body);
+  const { session, user } = await loginUser(req.body);
 
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    path: '/',
     expires: new Date(Date.now() + ONE_DAY),
   });
   res.cookie('sessionId', session._id, {
     httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    path: '/',
     expires: new Date(Date.now() + ONE_DAY),
   });
 
@@ -37,7 +42,7 @@ export const loginUserController = async (req, res) => {
     status: 200,
     message: 'Successfully logged in an user!',
     data: {
-    ...session.user
+      ...user,
     },
   });
 };
@@ -119,7 +124,7 @@ export const loginWithGoogleController = async (req, res) => {
     status: 200,
     message: 'Successfully logged in via Google OAuth!',
     data: {
-      ...session.user
+      ...session.user,
     },
   });
 };
