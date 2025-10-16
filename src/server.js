@@ -17,7 +17,6 @@ const PORT = Number(getEnvVar('PORT', '3000'));
 export const startServer = () => {
   const app = express();
   const server = http.createServer(app);
-
   app.use(
     cors({
       origin: getEnvVar('APP_DOMAIN'),
