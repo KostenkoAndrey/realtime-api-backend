@@ -175,36 +175,6 @@ export const resetPassword = async (payload) => {
   await UsersCollection.updateOne({ _id: user._id }, { password: encryptedPassword });
 };
 
-// export const loginOrSignupWithGoogle = async (code) => {
-//   const loginTicket = await validateCode(code);
-//   const payload = loginTicket.getPayload();
-//   if (!payload) throw createHttpError(401);
-
-//   let user = await UsersCollection.findOne({ email: payload.email });
-//   if (!user) {
-//     const password = await bcrypt.hash(randomBytes(10), 10);
-//     user = await UsersCollection.create({
-//       email: payload.email,
-//       name: getFullNameFromGoogleTokenPayload(payload),
-//       password,
-//     });
-//   }
-
-//   const newSession = createSession();
-//   const session = await SessionsCollection.create({
-//     userId: user._id,
-//     ...newSession,
-//   });
-//   return {
-//     user: {
-//       id: user._id,
-//       name: user.name,
-//       email: user.email,
-//     },
-//     session,
-//   };
-// };
-
 export const loginOrSignupWithGoogle = async (code) => {
   const loginTicket = await validateCode(code);
   const payload = loginTicket.getPayload();
@@ -212,7 +182,7 @@ export const loginOrSignupWithGoogle = async (code) => {
 
   let user = await UsersCollection.findOne({ email: payload.email });
   if (!user) {
-    const password = await bcrypt.hash(randomBytes(10).toString('hex'), 10);
+    const password = await bcrypt.hash(randomBytes(10), 10);
     user = await UsersCollection.create({
       email: payload.email,
       name: getFullNameFromGoogleTokenPayload(payload),
@@ -221,33 +191,16 @@ export const loginOrSignupWithGoogle = async (code) => {
   }
 
   const newSession = createSession();
-
-  try {
-    const session = await SessionsCollection.create({
-      userId: user._id,
-      ...newSession,
-    });
-
-    return {
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
-      session,
-    };
-  } catch (err) {
-    if (err.code === 11000) {
-      const existing = await SessionsCollection.findOne({ userId: user._id });
-      return {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-        },
-        session: existing,
-      };
-    }
-    throw err;
-  }
+  const session = await SessionsCollection.create({
+    userId: user._id,
+    ...newSession,
+  });
+  return {
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    },
+    session,
+  };
 };

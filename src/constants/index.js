@@ -13,3 +13,9 @@ export const SMTP = {
   SMTP_FROM: 'SMTP_FROM',
 };
 export const countries = ['de', 'nl', 'jp', 'gb', 'ca', 'fr', 'in', 'br', 'au', 'ch'];
+export const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'none',
+  path: '/',
+};

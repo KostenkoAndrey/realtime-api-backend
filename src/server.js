@@ -19,6 +19,7 @@ export const startServer = () => {
   const server = http.createServer(app);
   app.use(
     cors({
+      // origin: true,
       origin: getEnvVar('APP_DOMAIN'),
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
