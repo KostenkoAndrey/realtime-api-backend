@@ -59,7 +59,7 @@ export const logoutUserController = async (request, reply) => {
     maxAge: -1,
   });
 
-  return reply.status(204).send();
+  return reply.code(204).send();
 };
 
 const setupSession = (reply, session) => {
