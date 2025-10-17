@@ -140,7 +140,6 @@ export const requestResetToken = async (email) => {
     subject: 'Reset your password',
     html,
   });
-  // console.log("before");
 
   //   await resendEmail({
   //     from: getEnvVar('SMTP_FROM'),
@@ -148,7 +147,6 @@ export const requestResetToken = async (email) => {
   //     subject: 'Reset your password',
   //     html,
   //   });
-  //   console.log("After");
 };
 
 export const resetPassword = async (payload) => {
