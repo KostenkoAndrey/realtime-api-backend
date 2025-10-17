@@ -1,18 +1,26 @@
-import { HttpError } from 'http-errors';
+export const errorHandler = (error, request, reply) => {
+  request.log.error(
+    {
+      err: error,
+      url: request.url,
+      method: request.method,
+    },
+    'Request error',
+  );
 
-export const errorHandler = (err, req, res, next) => {
-  if (err instanceof HttpError) {
-    res.status(err.status).json({
-      status: err.status,
-      message: err.name,
-      data: err,
-    });
-    return;
+  const statusCode = error.statusCode || error.status || 500;
+
+  const errorName = error.name || 'Error';
+
+  const response = {
+    status: statusCode,
+    message: errorName,
+    data: statusCode === 500 ? 'Something went wrong' : error.message,
+  };
+
+  if (process.env.NODE_ENV === 'development') {
+    response.stack = error.stack;
   }
 
-  res.status(500).json({
-    status: 500,
-    message: 'Something went wrong',
-    data: err.message,
-  });
+  reply.code(statusCode).send(response);
 };
