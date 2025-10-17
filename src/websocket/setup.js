@@ -1,29 +1,32 @@
-import { WebSocketServer } from 'ws';
+import fastifyWebsocket from '@fastify/websocket';
 import { handleAudioConnection } from './audioHandler.js';
 import { wsAuthenticate } from '../middlewares/wsAuthenticate.js';
 
-export const setupWebSocket = (server, openai) => {
-  const wss = new WebSocketServer({
-    server,
-    path: '/audio',
-    verifyClient: async (info, callback) => {
+export const setupWebSocket = async (fastify, openai) => {
+  await fastify.register(fastifyWebsocket);
+
+  fastify.register(async function (fastify) {
+    // 🆕 Используем preValidation hook для аутентификации
+    fastify.addHook('preValidation', async (request, reply) => {
       try {
-        const { user } = await wsAuthenticate(info.req);
-
-        info.req.user = user;
-
-        callback(true);
+        const { user } = await wsAuthenticate(request.raw);
+        request.user = user;
+        console.log('✅ User authenticated in hook:', user.email);
       } catch (error) {
-        console.error('❌ WebSocket authentication failed:', error.message);
-        callback(false, 401, 'Unauthorized');
+        console.error('❌ Authentication failed:', error.message);
+        reply.code(401).send({ error: 'Unauthorized' });
       }
-    },
-  });
+    });
 
-  wss.on('connection', (ws, request) => {
-    ws.user = request.user;
-    handleAudioConnection(ws, openai);
-  });
+    fastify.get('/audio', { websocket: true }, (socket, req) => {
+      console.log('🔌 WebSocket connection established');
 
-  return wss;
+      // User уже аутентифицирован в hook
+      socket.user = req.user;
+
+      console.log('📞 Calling handleAudioConnection...');
+      handleAudioConnection(socket, openai);
+      console.log('✅ handleAudioConnection setup complete');
+    });
+  });
 };

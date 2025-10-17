@@ -1,25 +1,77 @@
-import Joi from 'joi';
+export const registerUserSchema = {
+  type: 'object',
+  required: ['name', 'email', 'password'],
+  properties: {
+    name: {
+      type: 'string',
+      minLength: 3,
+      maxLength: 30,
+    },
+    email: {
+      type: 'string',
+      format: 'email',
+      minLength: 6,
+      maxLength: 30,
+    },
+    password: {
+      type: 'string',
+      minLength: 8,
+      maxLength: 30,
+    },
+  },
+  additionalProperties: false,
+};
 
-export const registerUserSchema = Joi.object({
-  name: Joi.string().min(3).max(30).required(),
-  email: Joi.string().min(6).max(30).email().required(),
-  password: Joi.string().min(8).max(30).required(),
-});
+export const loginUserSchema = {
+  type: 'object',
+  required: ['email', 'password'],
+  properties: {
+    email: {
+      type: 'string',
+      format: 'email',
+    },
+    password: {
+      type: 'string',
+    },
+  },
+  additionalProperties: false,
+};
 
-export const loginUserSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().required(),
-});
+export const requestResetEmailSchema = {
+  type: 'object',
+  required: ['email'],
+  properties: {
+    email: {
+      type: 'string',
+      format: 'email',
+    },
+  },
+  additionalProperties: false,
+};
 
-export const requestResetEmailSchema = Joi.object({
-  email: Joi.string().email().required(),
-});
+export const resetPasswordSchema = {
+  type: 'object',
+  required: ['password', 'token'],
+  properties: {
+    password: {
+      type: 'string',
+      minLength: 8,
+      maxLength: 30,
+    },
+    token: {
+      type: 'string',
+    },
+  },
+  additionalProperties: false,
+};
 
-export const resetPasswordSchema = Joi.object({
-  password: Joi.string().min(8).max(30).required(),
-  token: Joi.string().required(),
-});
-
-export const loginWithGoogleOAuthSchema = Joi.object({
-  code: Joi.string().required(),
-});
+export const loginWithGoogleOAuthSchema = {
+  type: 'object',
+  required: ['code'],
+  properties: {
+    code: {
+      type: 'string',
+    },
+  },
+  additionalProperties: false,
+};

@@ -30,13 +30,13 @@ export const loginUser = async (payload) => {
   const user = await UsersCollection.findOne({ email: payload.email });
 
   if (!user) {
-    throw createHttpError(404, 'User not found');
+    throw createHttpError(401, 'Email or password is incorrect');
   }
 
   const isEqual = await bcrypt.compare(payload.password, user.password);
 
   if (!isEqual) {
-    throw createHttpError(401, 'Unauthorized');
+    throw createHttpError(401, 'Email or password is incorrect');
   }
 
   await SessionsCollection.deleteOne({ userId: user._id });
@@ -140,13 +140,6 @@ export const requestResetToken = async (email) => {
     subject: 'Reset your password',
     html,
   });
-
-  //   await resendEmail({
-  //     from: getEnvVar('SMTP_FROM'),
-  //     to: email,
-  //     subject: 'Reset your password',
-  //     html,
-  //   });
 };
 
 export const resetPassword = async (payload) => {
@@ -176,7 +169,7 @@ export const resetPassword = async (payload) => {
 export const loginOrSignupWithGoogle = async (code) => {
   const loginTicket = await validateCode(code);
   const payload = loginTicket.getPayload();
-  if (!payload) throw createHttpError(401);
+  if (!payload) throw createHttpError(401, 'Failed to verify Google token');
 
   let user = await UsersCollection.findOne({ email: payload.email });
   if (!user) {

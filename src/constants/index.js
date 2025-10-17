@@ -5,6 +5,7 @@ export const TEMPLATES_DIR = path.join(process.cwd(), 'src', 'templates');
 export const SORT_ORDER = { ASC: 'asc', DESC: 'desc' };
 export const FIFTEEN_MINUTES = 15 * 60 * 1000;
 export const ONE_DAY = 24 * 60 * 60 * 1000;
+export const countries = ['de', 'nl', 'jp', 'gb', 'ca', 'fr', 'in', 'br', 'au', 'ch'];
 export const SMTP = {
   SMTP_HOST: 'SMTP_HOST',
   SMTP_PORT: 'SMTP_PORT',
@@ -12,10 +13,17 @@ export const SMTP = {
   SMTP_PASSWORD: 'SMTP_PASSWORD',
   SMTP_FROM: 'SMTP_FROM',
 };
-export const countries = ['de', 'nl', 'jp', 'gb', 'ca', 'fr', 'in', 'br', 'au', 'ch'];
+
 export const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: true,
   sameSite: 'none',
   path: '/',
 };
+
+// export const COOKIE_OPTIONS = {
+//   httpOnly: true,
+//   secure: false,
+//   sameSite: 'lax',
+//   path: '/',
+// };

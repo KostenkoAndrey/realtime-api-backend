@@ -1,6 +1,3 @@
-import { Router } from 'express';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { validateBody } from '../middlewares/validateBody.js';
 import {
   registerUserSchema,
   loginUserSchema,
@@ -19,15 +16,60 @@ import {
   loginWithGoogleController,
 } from '../controllers/auth.js';
 
-const router = Router();
+export default async function authRouter(fastify, options) {
+  fastify.post(
+    '/register',
+    {
+      schema: {
+        body: registerUserSchema,
+      },
+    },
+    registerUserController,
+  );
 
-router.post('/register', validateBody(registerUserSchema), ctrlWrapper(registerUserController));
-router.post('/login', validateBody(loginUserSchema), ctrlWrapper(loginUserController));
-router.post('/logout', ctrlWrapper(logoutUserController));
-router.post('/refresh', ctrlWrapper(refreshUserSessionController));
-router.post('/request-reset-email', validateBody(requestResetEmailSchema), ctrlWrapper(requestResetEmailController));
-router.post('/reset-password', validateBody(resetPasswordSchema), ctrlWrapper(resetPasswordController));
-router.get('/get-oauth-url', ctrlWrapper(getGoogleOAuthUrlController));
-router.post('/confirm-oauth', validateBody(loginWithGoogleOAuthSchema), ctrlWrapper(loginWithGoogleController));
+  fastify.post(
+    '/login',
+    {
+      schema: {
+        body: loginUserSchema,
+      },
+    },
+    loginUserController,
+  );
 
-export default router;
+  fastify.post('/logout', logoutUserController);
+
+  fastify.post('/refresh', refreshUserSessionController);
+
+  fastify.post(
+    '/request-reset-email',
+    {
+      schema: {
+        body: requestResetEmailSchema,
+      },
+    },
+    requestResetEmailController,
+  );
+
+  fastify.post(
+    '/reset-password',
+    {
+      schema: {
+        body: resetPasswordSchema,
+      },
+    },
+    resetPasswordController,
+  );
+
+  fastify.get('/get-oauth-url', getGoogleOAuthUrlController);
+
+  fastify.post(
+    '/confirm-oauth',
+    {
+      schema: {
+        body: loginWithGoogleOAuthSchema,
+      },
+    },
+    loginWithGoogleController,
+  );
+}

@@ -1,10 +1,7 @@
-import { Router } from 'express';
 import authRouter from './auth.js';
 import stockRouter from './stock.js';
 
-const router = Router();
-
-router.use('/auth', authRouter);
-router.use('/stock', stockRouter);
-
-export default router;
+export default async function router(fastify, options) {
+  await fastify.register(authRouter, { prefix: '/auth' });
+  await fastify.register(stockRouter, { prefix: '/stock' });
+}

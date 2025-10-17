@@ -1,8 +1,6 @@
-import express from 'express';
-import http from 'http';
-import pino from 'pino-http';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
+import Fastify from 'fastify';
+import fastifyCors from '@fastify/cors';
+import fastifyCookie from '@fastify/cookie';
 import OpenAI from 'openai';
 
 import { getEnvVar } from './utils/getEnvVar.js';
@@ -14,37 +12,51 @@ import { startStockUpdateCron } from './services/stock.js';
 
 const PORT = Number(getEnvVar('PORT', '3000'));
 
-export const startServer = () => {
-  const app = express();
-  const server = http.createServer(app);
-  app.use(
-    cors({
-      // origin: true,
-      origin: getEnvVar('APP_DOMAIN'),
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-    }),
-  );
+export const startServer = async () => {
+  const fastify = Fastify({
+    logger: {
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          translateTime: 'HH:MM:ss Z',
+          ignore: 'pid,hostname',
+        },
+      },
+    },
+  });
 
-  app.use(cookieParser());
-  app.use(express.json());
-  app.use(pino({ transport: { target: 'pino-pretty' } }));
+  await fastify.register(fastifyCors, {
+    origin: getEnvVar('APP_DOMAIN'),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
+  await fastify.register(fastifyCookie);
 
   const openai = new OpenAI({ apiKey: getEnvVar('OPENAI_API_KEY') });
-  app.locals.openai = openai;
+  fastify.decorate('openai', openai);
 
-  setupWebSocket(server, openai);
+  await setupWebSocket(fastify, openai);
 
-  app.use(router);
+  await fastify.register(router);
 
-  app.use(notFoundHandler);
-  app.use(errorHandler);
+  fastify.setNotFoundHandler(notFoundHandler);
+  fastify.setErrorHandler(errorHandler);
 
-  server.listen(PORT, () => {
+  try {
+    await fastify.listen({
+      port: PORT,
+      host: '0.0.0.0',
+    });
+
     console.log(`🚀 Server is running on port ${PORT}`);
     console.log(`🌐 CORS enabled for: ${getEnvVar('APP_DOMAIN')}`);
     console.log(`🌐 WebSocket available at ${getEnvVar('APP_DOMAIN')}/audio`);
+
     startStockUpdateCron();
-  });
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
 };

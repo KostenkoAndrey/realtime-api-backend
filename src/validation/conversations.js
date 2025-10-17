@@ -1,21 +1,34 @@
-import Joi from 'joi';
-import { isValidObjectId } from 'mongoose';
-
-export const createConversationSchema = Joi.object({
-  messages: Joi.array()
-    .items(
-      Joi.object({
-        role: Joi.string().valid('user', 'ai').required(),
-        content: Joi.string().required(),
-        createdAt: Joi.date().default(() => new Date()),
-      }),
-    )
-    .min(1)
-    .required(),
-  parentId: Joi.string().custom((value, helper) => {
-    if (value && !isValidObjectId(value)) {
-      return helper.message('Parent id should be a valid mongo id');
-    }
-    return value;
-  }),
-});
+export const createConversationSchema = {
+  body: {
+    type: 'object',
+    required: ['messages'],
+    properties: {
+      messages: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          type: 'object',
+          required: ['role', 'content'],
+          properties: {
+            role: {
+              type: 'string',
+              enum: ['user'],
+            },
+            content: {
+              type: 'string',
+              minLength: 1,
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+            },
+          },
+        },
+      },
+      parentId: {
+        type: 'string',
+        nullable: true,
+      },
+    },
+  },
+};
