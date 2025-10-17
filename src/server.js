@@ -44,7 +44,7 @@ export const startServer = () => {
   server.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
     console.log(`🌐 CORS enabled for: ${getEnvVar('APP_DOMAIN')}`);
-    console.log(`🌐 WebSocket available at ws://localhost:${PORT}/audio`);
+    console.log(`🌐 WebSocket available at ${getEnvVar('APP_DOMAIN')}/audio`);
     startStockUpdateCron();
   });
 };
