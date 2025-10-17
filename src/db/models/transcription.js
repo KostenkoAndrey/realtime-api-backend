@@ -18,5 +18,4 @@ const transcriptionSchema = new mongoose.Schema(
   },
 );
 
-transcriptionSchema.index({ userId: 1, createdAt: -1 });
 export const TranscriptionCollection = mongoose.model('Transcription', transcriptionSchema);

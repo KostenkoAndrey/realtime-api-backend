@@ -9,6 +9,8 @@ export const handleAudioConnection = (ws, openai) => {
     chunkCounter: 0,
     processingChunk: false,
     fullTranscription: '',
+    pendingPromises: [],
+    isStopping: false,
   };
 
   ws.on('message', async (message) => {
@@ -17,8 +19,10 @@ export const handleAudioConnection = (ws, openai) => {
 
       if (parsed.isCommand) {
         await handleCommand(parsed.data, state, ws, openai, ws.user);
-      } else if (parsed.isAudio && state.isRecording) {
-        state.audioBuffer.push(parsed.buffer);
+      } else if (parsed.isAudio) {
+        if (state.isRecording) {
+          state.audioBuffer.push(parsed.buffer);
+        }
       }
     } catch (error) {
       ws.send(
@@ -31,12 +35,14 @@ export const handleAudioConnection = (ws, openai) => {
   });
 
   ws.on('close', () => {
-    state.isRecording = false;
-    state.audioBuffer = [];
-    state.fullTranscription = '';
+    if (!state.isStopping) {
+      state.isRecording = false;
+      state.audioBuffer = [];
+      state.fullTranscription = '';
+    }
   });
 
-  ws.on('error', () => {});
+  ws.on('error', (error) => {});
 };
 
 async function handleCommand(data, state, ws, openai, user) {
@@ -46,12 +52,19 @@ async function handleCommand(data, state, ws, openai, user) {
       state.audioBuffer = [];
       state.chunkCounter = 0;
       state.fullTranscription = '';
+      state.pendingPromises = [];
+      state.isStopping = false;
       ws.send(JSON.stringify({ type: 'recording_started' }));
       break;
     }
 
     case 'stop_recording': {
       state.isRecording = false;
+      state.isStopping = true;
+
+      if (state.pendingPromises.length > 0) {
+        await Promise.allSettled(state.pendingPromises);
+      }
 
       let waitAttempts = 0;
       const maxWaitAttempts = 150;
@@ -63,6 +76,7 @@ async function handleCommand(data, state, ws, openai, user) {
 
       if (state.audioBuffer.length > 0) {
         state.chunkCounter++;
+
         const text = await processAudioChunk(state.audioBuffer, ws, openai, state.chunkCounter, true, user);
 
         if (text) {
@@ -70,7 +84,7 @@ async function handleCommand(data, state, ws, openai, user) {
         }
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (state.fullTranscription.trim()) {
         try {
@@ -87,6 +101,7 @@ async function handleCommand(data, state, ws, openai, user) {
             }),
           );
         } catch (error) {
+          console.error(`[CMD] Failed to save transcription:`, error);
           ws.send(
             JSON.stringify({
               type: 'error',
@@ -106,6 +121,8 @@ async function handleCommand(data, state, ws, openai, user) {
 
       state.audioBuffer = [];
       state.fullTranscription = '';
+      state.pendingPromises = [];
+      state.isStopping = false;
       break;
     }
 
@@ -117,13 +134,13 @@ async function handleCommand(data, state, ws, openai, user) {
         const chunkToProcess = [...state.audioBuffer];
         state.audioBuffer = [];
 
-        processAudioChunk(chunkToProcess, ws, openai, state.chunkCounter, false, user)
+        const processingPromise = processAudioChunk(chunkToProcess, ws, openai, state.chunkCounter, false, user)
           .then((text) => {
             if (text) {
               state.fullTranscription += (state.fullTranscription ? ' ' : '') + text;
             }
           })
-          .catch(() => {
+          .catch((error) => {
             ws.send(
               JSON.stringify({
                 type: 'error',
@@ -133,7 +150,14 @@ async function handleCommand(data, state, ws, openai, user) {
           })
           .finally(() => {
             state.processingChunk = false;
+
+            const index = state.pendingPromises.indexOf(processingPromise);
+            if (index > -1) {
+              state.pendingPromises.splice(index, 1);
+            }
           });
+
+        state.pendingPromises.push(processingPromise);
       }
       break;
     }

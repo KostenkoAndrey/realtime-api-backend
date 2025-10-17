@@ -11,6 +11,4 @@ const sessionsSchema = new Schema(
   { timestamps: true, versionKey: false },
 );
 
-sessionsSchema.index({ userId: 1 }, { unique: true });
-
 export const SessionsCollection = model('sessions', sessionsSchema);
